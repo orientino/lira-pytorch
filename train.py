@@ -19,11 +19,14 @@ from torchvision import models, transforms
 from torchvision.datasets import CIFAR10
 from tqdm import tqdm
 
+from wide_resnet import WideResNet
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--lr", default=0.1, type=float)
 parser.add_argument("--epochs", default=1, type=int)
 parser.add_argument("--n_shadows", default=16, type=int)
 parser.add_argument("--shadow_id", default=1, type=int)
+parser.add_argument("--model", default="wresnet", type=str)
 parser.add_argument("--pkeep", default=0.5, type=float)
 parser.add_argument("--savedir", default="exp/cifar10", type=str)
 parser.add_argument("--debug", action="store_true")
@@ -60,15 +63,12 @@ def run():
     train_ds = CIFAR10(root=datadir, train=True, download=True, transform=train_transform)
     test_ds = CIFAR10(root=datadir, train=False, download=True, transform=test_transform)
 
-    """
-    Compute the IN / OUT subset:
-
-    If we run each experiment independently then even after a lot of trials
-    there will still probably be some examples that were always included
-    or always excluded. So instead, with experiment IDs, we guarantee that
-    after `args.n_shadows` are done, each example is seen exactly half
-    of the time in train, and half of the time not in train.
-    """
+    # Compute the IN / OUT subset:
+    # If we run each experiment independently then even after a lot of trials
+    # there will still probably be some examples that were always included
+    # or always excluded. So instead, with experiment IDs, we guarantee that
+    # after `args.n_shadows` are done, each example is seen exactly half
+    # of the time in train, and half of the time not in train.
 
     size = len(train_ds)
     np.random.seed(seed)
@@ -90,9 +90,12 @@ def run():
     test_dl = DataLoader(test_ds, batch_size=128, shuffle=False, num_workers=4)
 
     # Model
-    m = models.resnet18(weights=None, num_classes=10)
-    m.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
-    m.maxpool = nn.Identity()
+    if args.model == "wresnet":
+        m = WideResNet(28, 10, 0.3, 10)
+    else:
+        m = models.resnet18(weights=None, num_classes=10)
+        m.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        m.maxpool = nn.Identity()
     m = m.to(DEVICE)
 
     optim = torch.optim.SGD(m.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
@@ -120,7 +123,7 @@ def run():
     print(f"[test] acc_test: {get_acc(m, test_dl):.4f}")
     wandb.log({"acc_test": get_acc(m, test_dl)})
 
-    savedir = os.path.join(args.savedir, args.shadow_id)
+    savedir = os.path.join(args.savedir, str(args.shadow_id))
     os.makedirs(savedir, exist_ok=True)
     np.save(savedir + "/keep.npy", keep_bool)
     torch.save(m.state_dict(), savedir + "/model.pt")

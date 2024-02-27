@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Modified copy of the original:
+# Modified copy by Chenxiang Zhang (orientino) of the original:
 # https://github.com/tensorflow/privacy/tree/master/research/mi_lira_2021
-#
-# author: Chenxiang Zhang (orientino)
 
 
 import argparse
@@ -177,7 +175,6 @@ def do_plot(fn, keep, scores, ntest, legend="", metric="auc", sweep_fn=sweep, **
 
 
 def fig_fpr_tpr():
-
     plt.figure(figsize=(4, 3))
 
     do_plot(generate_ours, keep, scores, 1, "Ours (online)\n", metric="auc")

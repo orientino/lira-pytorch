@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Modified copy of the original:
+# Modified copy by Chenxiang Zhang (orientino) of the original:
 # https://github.com/tensorflow/privacy/tree/master/research/mi_lira_2021
-#
-# author: Chenxiang Zhang (orientino)
 
 
 import argparse
