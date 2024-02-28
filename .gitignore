@@ -1,6 +1,7 @@
 __pycache__
 exp
 logs
+slurm
 gpu.sh
 *.out
 

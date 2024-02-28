@@ -26,7 +26,7 @@ parser.add_argument("--lr", default=0.1, type=float)
 parser.add_argument("--epochs", default=1, type=int)
 parser.add_argument("--n_shadows", default=16, type=int)
 parser.add_argument("--shadow_id", default=1, type=int)
-parser.add_argument("--model", default="wresnet", type=str)
+parser.add_argument("--model", default="resnet18", type=str)
 parser.add_argument("--pkeep", default=0.5, type=float)
 parser.add_argument("--savedir", default="exp/cifar10", type=str)
 parser.add_argument("--debug", action="store_true")
@@ -90,12 +90,16 @@ def run():
     test_dl = DataLoader(test_ds, batch_size=128, shuffle=False, num_workers=4)
 
     # Model
-    if args.model == "wresnet":
+    if args.model == "wresnet28-2":
+        m = WideResNet(28, 2, 0.0, 10)
+    elif args.model == "wresnet28-10":
         m = WideResNet(28, 10, 0.3, 10)
-    else:
+    elif args.model == "resnet18":
         m = models.resnet18(weights=None, num_classes=10)
         m.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
         m.maxpool = nn.Identity()
+    else:
+        raise NotImplementedError
     m = m.to(DEVICE)
 
     optim = torch.optim.SGD(m.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)

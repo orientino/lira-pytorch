@@ -19,7 +19,7 @@ from wide_resnet import WideResNet
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--n_queries", default=2, type=int)
-parser.add_argument("--model", default="wresnet", type=str)
+parser.add_argument("--model", default="resnet18", type=str)
 parser.add_argument("--savedir", default="exp/cifar10", type=str)
 args = parser.parse_args()
 
@@ -43,12 +43,16 @@ def run():
 
     # Infer the logits with multiple queries
     for path in os.listdir(args.savedir):
-        if args.model == "wresnet":
+        if args.model == "wresnet28-2":
+            m = WideResNet(28, 2, 0.0, 10)
+        elif args.model == "wresnet28-10":
             m = WideResNet(28, 10, 0.3, 10)
-        else:
+        elif args.model == "resnet18":
             m = models.resnet18(weights=None, num_classes=10)
             m.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
             m.maxpool = nn.Identity()
+        else:
+            raise NotImplementedError
         m.load_state_dict(torch.load(os.path.join(args.savedir, path, "model.pt")))
         m.to(DEVICE)
         m.eval()
