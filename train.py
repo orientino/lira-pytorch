@@ -124,6 +124,7 @@ def run():
 
         wandb.log({"loss": loss_total / len(train_dl)})
 
+    m.eval()
     print(f"[test] acc_test: {get_acc(m, test_dl):.4f}")
     wandb.log({"acc_test": get_acc(m, test_dl)})
 
